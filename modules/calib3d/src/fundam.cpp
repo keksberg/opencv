@@ -658,7 +658,7 @@ public:
 
 cv::Mat cv::findFundamentalMat( InputArray _points1, InputArray _points2,
                                 int method, double param1, double param2,
-                                OutputArray _mask )
+                                OutputArray _mask, int maxIters )
 {
     Mat points1 = _points1.getMat(), points2 = _points2.getMat();
     Mat m1, m2, F;
@@ -708,9 +708,9 @@ cv::Mat cv::findFundamentalMat( InputArray _points1, InputArray _points2,
             param2 = 0.99;
 
         if( (method & ~3) == FM_RANSAC && npoints >= 15 )
-            result = createRANSACPointSetRegistrator(cb, 7, param1, param2)->run(m1, m2, F, _mask);
+            result = createRANSACPointSetRegistrator(cb, 7, param1, param2, maxIters)->run(m1, m2, F, _mask);
         else
-            result = createLMeDSPointSetRegistrator(cb, 7, param2)->run(m1, m2, F, _mask);
+            result = createLMeDSPointSetRegistrator(cb, 7, param2, maxIters)->run(m1, m2, F, _mask);
     }
 
     if( result <= 0 )

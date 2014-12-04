@@ -231,7 +231,7 @@ public:
                     std::swap(mask, bestMask);
                     model_i.copyTo(bestModel);
                     maxGoodCount = goodCount;
-                    niters = RANSACUpdateNumIters( confidence, (double)(count - goodCount)/count, modelPoints, niters );
+                    //niters = RANSACUpdateNumIters( confidence, (double)(count - goodCount)/count, modelPoints, niters );
                 }
             }
         }
@@ -311,7 +311,7 @@ public:
             return true;
         }
 
-        int iter, niters = RANSACUpdateNumIters(confidence, outlierRatio, modelPoints, maxIters);
+        int iter, niters = maxIters;//RANSACUpdateNumIters(confidence, outlierRatio, modelPoints, maxIters);
         niters = MAX(niters, 3);
 
         for( iter = 0; iter < niters; iter++ )

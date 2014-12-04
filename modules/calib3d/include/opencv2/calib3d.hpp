@@ -254,7 +254,8 @@ CV_EXPORTS void convertPointsHomogeneous( InputArray src, OutputArray dst );
 CV_EXPORTS_W Mat findFundamentalMat( InputArray points1, InputArray points2,
                                      int method = FM_RANSAC,
                                      double param1 = 3., double param2 = 0.99,
-                                     OutputArray mask = noArray() );
+                                     OutputArray mask = noArray(),
+                                     int maxIters = 1000 );
 
 //! variant of findFundamentalMat for backward compatibility
 CV_EXPORTS Mat findFundamentalMat( InputArray points1, InputArray points2,
