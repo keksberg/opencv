@@ -237,6 +237,11 @@ public:
     void operator()( InputArray image, InputArray mask, std::vector<KeyPoint>& keypoints,
                      OutputArray descriptors, bool useProvidedKeypoints=false ) const;
 
+    // Compute the BRISK features and descriptors on an image
+    CV_WRAP_AS(computeWithGrayValues) void withGrayValues(
+                     InputArray image, InputArray mask, CV_IN_OUT std::vector<KeyPoint>& keypoints,
+                     OutputArray descriptors, OutputArray grayValues) const;
+
     AlgorithmInfo* info() const;
 
     // custom setup
@@ -258,7 +263,7 @@ protected:
     void computeKeypointsNoOrientation(InputArray image, InputArray mask, std::vector<KeyPoint>& keypoints) const;
     void computeDescriptorsAndOrOrientation(InputArray image, InputArray mask, std::vector<KeyPoint>& keypoints,
                                        OutputArray descriptors, bool doDescriptors, bool doOrientation,
-                                       bool useProvidedKeypoints) const;
+                                       bool useProvidedKeypoints, OutputArray grayValues=noArray() ) const;
 
     // Feature parameters
     CV_PROP_RW int threshold;

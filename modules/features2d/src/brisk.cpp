@@ -533,10 +533,23 @@ BRISK::operator()( InputArray _image, InputArray _mask, std::vector<KeyPoint>& k
                                        useProvidedKeypoints);
 }
 
+// computes the descriptor
+void
+BRISK::withGrayValues( InputArray _image, InputArray _mask, std::vector<KeyPoint>& keypoints,
+                       OutputArray _descriptors, OutputArray _grayValues) const
+{
+  bool useProvidedKeypoints = true;
+  bool doOrientation = false;
+  bool doDescriptors = true;
+
+  computeDescriptorsAndOrOrientation(_image, _mask, keypoints, _descriptors, doDescriptors, doOrientation,
+                                       useProvidedKeypoints, _grayValues);
+}
+
 void
 BRISK::computeDescriptorsAndOrOrientation(InputArray _image, InputArray _mask, std::vector<KeyPoint>& keypoints,
                                      OutputArray _descriptors, bool doDescriptors, bool doOrientation,
-                                     bool useProvidedKeypoints) const
+                                     bool useProvidedKeypoints, OutputArray _grayValues) const
 {
   Mat image = _image.getMat(), mask = _mask.getMat();
   if( image.type() != CV_8UC1 )
@@ -547,6 +560,9 @@ BRISK::computeDescriptorsAndOrOrientation(InputArray _image, InputArray _mask, s
     doOrientation = true;
     computeKeypointsNoOrientation(_image, _mask, keypoints);
   }
+
+  // If the user specified cv::noArray(), this will yield false. Otherwise it will return true.
+  bool doGrayValues = _grayValues.needed();
 
   //Remove keypoints very close to the border
   size_t ksize = keypoints.size();
@@ -596,6 +612,16 @@ BRISK::computeDescriptorsAndOrOrientation(InputArray _image, InputArray _mask, s
     _descriptors.create((int)ksize, strings_, CV_8U);
     descriptors = _descriptors.getMat();
     descriptors.setTo(0);
+  }
+
+  // resize the grayvalues:
+  cv::Mat grayValues;
+  if (doGrayValues)
+  {
+    const int sizes[3] = {(int)ksize, noShortPairs_, 2};
+    _grayValues.create(3, sizes, CV_32F);
+    grayValues = _grayValues.getMat();
+    grayValues.setTo(-1);
   }
 
   // now do the extraction for all keypoints:
@@ -675,10 +701,16 @@ BRISK::computeDescriptorsAndOrOrientation(InputArray _image, InputArray _mask, s
     // now iterate through all the pairings
     unsigned int* ptr2 = (unsigned int*) ptr;
     const BriskShortPair* max = shortPairs_ + noShortPairs_;
+    int current_pair = 0;
     for (BriskShortPair* iter = shortPairs_; iter < max; ++iter)
     {
       t1 = *(_values + iter->i);
       t2 = *(_values + iter->j);
+      if (doGrayValues)
+      {
+          grayValues.at<float>((int)k, current_pair, 0) = t1 / 1024.0f;
+          grayValues.at<float>((int)k, current_pair, 1) = t2 / 1024.0f;
+      }
       if (t1 > t2)
       {
         *ptr2 |= ((1) << shifter);
@@ -691,6 +723,7 @@ BRISK::computeDescriptorsAndOrOrientation(InputArray _image, InputArray _mask, s
         shifter = 0;
         ++ptr2;
       }
+      ++current_pair;
     }
 
     ptr += strings_;
